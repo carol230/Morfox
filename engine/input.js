@@ -1,12 +1,15 @@
-// === CONTROLES TÁCTILES PARA MÓVIL ===
+// ====== SISTEMA DE INPUT ======
+// Manejo de entrada del usuario: teclado, mouse y táctil
+
+// === CONTROLES TÁCTILES (MÓVIL) ===
+// División de pantalla: izquierda = movimiento, derecha = disparo
 if (isTouchDevice) {
   canvas.addEventListener("touchstart", (e) => {
-    // En menús / upgrades / game over: DEJAR que se genere el click
+    // En menús permitir que funcione el click normal
     if (gameState !== "playing") {
       return;
     }
 
-    // En juego sí bloqueamos el comportamiento por defecto
     e.preventDefault();
 
     if (loadError || isLoading) return;
@@ -18,13 +21,13 @@ if (isTouchDevice) {
 
     const mitad = canvas.width / 2;
 
-    // 👉 TAP EN EL LADO DERECHO = DISPARAR
+    // Lado derecho = disparar
     if (x > mitad) {
       shootBullet();
       return;
     }
 
-    // 👉 LADO IZQUIERDO = JOYSTICK DE MOVIMIENTO
+    // Lado izquierdo = joystick virtual
     touchInput.active = true;
     touchInput.startX = x;
     touchInput.startY = y;
@@ -43,26 +46,28 @@ if (isTouchDevice) {
     const x = t.clientX - rect.left;
     const y = t.clientY - rect.top;
 
+    // Calcular desplazamiento desde posición inicial
     touchInput.deltaX = x - touchInput.startX;
     touchInput.deltaY = y - touchInput.startY;
   }, { passive: false });
 
   canvas.addEventListener("touchend", (e) => {
     if (gameState !== "playing") {
-      // En menús, dejamos que ese touch genere el click
       return;
     }
 
     e.preventDefault();
 
+    // Resetear joystick
     touchInput.active = false;
     touchInput.deltaX = 0;
     touchInput.deltaY = 0;
   }, { passive: false });
 }
 
-// ====== INPUT EVENTS ======
+// === CONTROLES DE TECLADO ===
 window.addEventListener("keydown", e => {
+  // ESC: Pausar/despausar o cerrar ayuda
   if (e.code === "Escape") {
     if (showControlsScreen) {
       showControlsScreen = false;
@@ -77,6 +82,7 @@ window.addEventListener("keydown", e => {
     }
   }
 
+  // SPACE: Iniciar juego o pausar
   if (e.code === "Space") {
     if (gameState === "menu") {
       gameState = "playing";
@@ -89,15 +95,18 @@ window.addEventListener("keydown", e => {
     }
   }
 
+  // M: Silenciar audio
   if (e.code === "KeyM") {
     toggleMute();
   }
 
+  // H: Mostrar/ocultar controles
   if (e.code === "KeyH") {
     showControlsScreen = !showControlsScreen;
     console.log(showControlsScreen ? "📖 Controles mostrados" : "📖 Controles ocultados");
   }
 
+  // Guardar estado de tecla para movimiento (WASD / flechas)
   keys[e.code] = true;
 });
 
@@ -105,6 +114,7 @@ window.addEventListener("keyup", e => {
   keys[e.code] = false;
 });
 
+// === CONTROLES DE MOUSE ===
 canvas.addEventListener("mousemove", e => {
   const rect = canvas.getBoundingClientRect();
   mousePos.x = e.clientX - rect.left;
@@ -116,6 +126,7 @@ canvas.addEventListener("click", e => {
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
 
+  // Menú: iniciar juego
   if (gameState === "menu") {
     gameState = "playing";
     startTime = performance.now();
@@ -123,16 +134,19 @@ canvas.addEventListener("click", e => {
     return;
   }
 
+  // Pausa: continuar
   if (gameState === "paused") {
     gameState = "playing";
     return;
   }
 
+  // En juego: disparar
   if (gameState === "playing") {
     shootBullet();
     return;
   }
 
+  // Level up: detectar click en cartas de upgrade
   if (gameState === "levelup") {
     const panelWidth = 600;
     const panelHeight = 260;
@@ -146,6 +160,7 @@ canvas.addEventListener("click", e => {
     const startX = (canvas.width - totalWidth) / 2;
     const cardY = panelY + 120;
 
+    // Verificar si el click está sobre alguna carta
     currentUpgradeOptions.forEach((upgrade, i) => {
       const x = startX + i * (cardWidth + spacing);
       if (mx > x && mx < x + cardWidth && my > cardY && my < cardY + cardHeight) {
@@ -154,6 +169,7 @@ canvas.addEventListener("click", e => {
       }
     });
   } else if (gameState === "gameover" || gameState === "victory") {
+    // Game over/Victoria: volver al menú
     gameState = "menu";
   }
 });

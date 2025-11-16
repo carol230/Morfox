@@ -1,13 +1,17 @@
-// ====== GAME LOOP ======
+// ====== GAME LOOP PRINCIPAL ======
+// Variables para control de framerate
 let lastTime = 0;
 let fps = 60;
 let fpsFrames = 0;
 let fpsTime = 0;
 
+// Actualiza la lógica del juego cada frame
 function update(dt) {
   if (gameState === "playing") {
+    // Actualizar tiempo
     gameTime += dt * 1000;
 
+    // Verificar condición de victoria
     if (gameTime >= survivalTime) {
       gameState = "victory";
       stopMusic();
@@ -15,6 +19,7 @@ function update(dt) {
       updateStatsOnGameEnd();
     }
 
+    // Actualizar todos los sistemas del juego
     updatePlayer(dt);
     updateEnemies(dt);
     updateBullets(dt);
@@ -23,10 +28,13 @@ function update(dt) {
     updateDifficulty();
     updateScreenShake();
 
+    // Sistema de spawn de enemigos
     const now = Date.now();
     if (now - enemyTimer > enemySpawnRate) {
+      // Más enemigos por oleada según tiempo jugado
       let spawnCount = Math.floor(1 + gameTime / 60000);
       spawnCount = Math.min(spawnCount, 5);
+
       for (let i = 0; i < spawnCount; i++) {
         if (enemies.length < MAX_ENEMIES) {
           spawnEnemy();
@@ -35,6 +43,7 @@ function update(dt) {
       enemyTimer = now;
     }
 
+    // Sistema de level up
     if (player.xp >= player.xpToNextLevel) {
       player.level++;
       player.xp -= player.xpToNextLevel;
@@ -46,9 +55,11 @@ function update(dt) {
   }
 }
 
+// Dibuja todos los elementos visuales del juego
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Pantallas especiales
   if (gameState === "menu") {
     drawMenu();
     if (showControlsScreen) {
@@ -73,6 +84,7 @@ function draw() {
     return;
   }
 
+  // Renderizado del juego (orden importa: fondo a frente)
   drawMap();
   drawDecorations();
   drawPlayer();
@@ -82,6 +94,7 @@ function draw() {
   drawParticles();
   drawHUD();
 
+  // Overlays
   if (gameState === "paused") {
     drawPauseScreen();
   }
@@ -95,13 +108,16 @@ function draw() {
   }
 }
 
+// Loop principal del juego a 60 FPS
 function gameLoop(timestamp) {
   if (!lastTime) lastTime = timestamp;
-  const delta = (timestamp - lastTime) / 1000;
+  const delta = (timestamp - lastTime) / 1000;  // en segundos
   lastTime = timestamp;
 
-  const dt = Math.min(delta, 0.033);
+  // Limitar delta time para evitar saltos grandes
+  const dt = Math.min(delta, 0.033);  // máximo ~30 FPS
 
+  // Calcular FPS
   fpsFrames++;
   fpsTime += dt;
   if (fpsTime >= 1) {
@@ -110,6 +126,7 @@ function gameLoop(timestamp) {
     fpsTime = 0;
   }
 
+  // Actualizar lógica y renderizar
   update(dt);
   draw();
 

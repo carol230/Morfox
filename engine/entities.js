@@ -1,14 +1,14 @@
-// ====== PLAYER ======
+// ====== JUGADOR ======
+// Crea el objeto jugador con todas sus propiedades iniciales
 function createPlayer() {
   const playerWidth = PLAYER_W * PLAYER_SCALE;
   const playerHeight = PLAYER_H * PLAYER_SCALE;
 
-  // Posición inicial centrada
+  // Posición inicial centrada en el mundo
   let startX = (WORLD_COLS * TILE_SIZE) / 2 - playerWidth / 2;
   let startY = (WORLD_ROWS * TILE_SIZE) / 2 - playerHeight / 2;
 
-  // Verificar que el jugador no aparezca en una roca
-  // Si hay colisión, buscar un lugar cercano sin colisiones
+  // Buscar una posición sin obstáculos para empezar
   let safeX = startX;
   let safeY = startY;
 
@@ -55,16 +55,17 @@ function createPlayer() {
     }
   }
 
+  // Crear objeto jugador con stats iniciales
   return {
     x: safeX,
     y: safeY,
     width: playerWidth,
     height: playerHeight,
-    speed: 2.0,
+    speed: 2.0,              // velocidad de movimiento
     health: 100,
     maxHealth: 100,
-    damage: 1,
-    fireRate: 250,
+    damage: 1,               // daño base
+    fireRate: 250,           // milisegundos entre disparos
     lastShot: 0,
     xp: 0,
     level: 1,
@@ -74,9 +75,11 @@ function createPlayer() {
   };
 }
 
+// Actualiza posición y estado del jugador cada frame
 function updatePlayer(dt) {
   if (!player) return;
 
+  // Leer input de teclado
   let vx = 0;
   let vy = 0;
 
@@ -85,9 +88,9 @@ function updatePlayer(dt) {
   if (keys["ArrowUp"] || keys["KeyW"]) vy = -1;
   if (keys["ArrowDown"] || keys["KeyS"]) vy = 1;
 
-  // Movimiento táctil
+  // Movimiento táctil (móvil)
   if (touchInput.active) {
-    const deadZone = 20; // No mover por pequeños movimientos
+    const deadZone = 20;
 
     if (Math.abs(touchInput.deltaX) > deadZone) {
       vx = touchInput.deltaX > 0 ? 1 : -1;
@@ -179,18 +182,22 @@ function findNearestEnemy(x, y) {
 }
 
 // ====== BALAS Y EXPLOSIONES ======
+// Dispara una bala hacia donde apunta el mouse
 function shootBullet() {
   if (!player) return;
 
+  // Rate limiting: respetar cadencia de disparo
   const now = performance.now();
   if (now - player.lastShot < player.fireRate) {
     return;
   }
   player.lastShot = now;
 
+  // Convertir posición del mouse a coordenadas del mundo
   const targetX = mousePos.x + camX;
   const targetY = mousePos.y + camY;
 
+  // Calcular ángulo hacia el objetivo
   const angle = Math.atan2(
     targetY - (player.y + player.height / 2),
     targetX - (player.x + player.width / 2)
@@ -198,6 +205,7 @@ function shootBullet() {
 
   const speed = 8;
 
+  // Crear nueva bala
   bullets.push({
     x: player.x + player.width / 2,
     y: player.y + player.height / 2,
@@ -206,26 +214,30 @@ function shootBullet() {
     width: BULLET_W,
     height: BULLET_H,
     damage: player.damage,
-    life: 1.5
+    life: 1.5  // segundos
   });
 
   playSound("shoot", 0.3);
 }
 
+// Actualiza todas las balas y detecta impactos
 function updateBullets(dt) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const b = bullets[i];
     b.x += b.vx * 60 * dt;
     b.y += b.vy * 60 * dt;
     b.life -= dt;
+
+    // Eliminar balas que expiraron
     if (b.life <= 0) {
       bullets.splice(i, 1);
       continue;
     }
 
-    // Colisión con enemigos
+    // Verificar colisión con enemigos
     for (const enemy of enemies) {
       if (!enemy.alive) continue;
+
       const hitboxBullet = {
         x: b.x - b.width / 2,
         y: b.y - b.height / 2,
@@ -238,7 +250,9 @@ function updateBullets(dt) {
         width: enemy.width,
         height: enemy.height
       };
+
       if (rectsOverlap(hitboxBullet, hitboxEnemy)) {
+        // Aplicar daño
         enemy.health -= b.damage;
         playSound("enemyHit", 0.3);
         createParticles(
@@ -248,6 +262,8 @@ function updateBullets(dt) {
           5
         );
         bullets.splice(i, 1);
+
+        // Enemigo muerto
         if (enemy.health <= 0) {
           enemy.alive = false;
           enemy.deathTime = 0;
@@ -268,6 +284,7 @@ function updateBullets(dt) {
   }
 }
 
+// Crea efecto visual de explosión
 function createExplosion(x, y, color, amount) {
   explosions.push({
     x,
@@ -281,10 +298,11 @@ function createExplosion(x, y, color, amount) {
   createParticles(x, y, color, amount);
 }
 
+// Actualiza animación de explosiones
 function updateExplosions(dt) {
   for (let i = explosions.length - 1; i >= 0; i--) {
     const e = explosions[i];
-    e.radius += (e.maxRadius - e.radius) * 0.2;
+    e.radius += (e.maxRadius - e.radius) * 0.2;  // expansión suave
     e.life -= dt;
     if (e.life <= 0) {
       explosions.splice(i, 1);
@@ -297,6 +315,8 @@ function getAvailableEnemyTypes() {
   return ENEMY_TYPES;
 }
 
+// Selecciona un tipo de enemigo aleatorio según su peso de spawn
+// Los enemigos con mayor spawnWeight aparecen más frecuentemente
 function selectRandomEnemyType(availableTypes) {
   let totalWeight = 0;
   for (const type of availableTypes) {
@@ -310,15 +330,17 @@ function selectRandomEnemyType(availableTypes) {
   return availableTypes[availableTypes.length - 1];
 }
 
+// Genera un enemigo en un borde aleatorio del mapa
 function spawnEnemy() {
   const availableTypes = getAvailableEnemyTypes();
   if (availableTypes.length === 0) return;
 
   const type = selectRandomEnemyType(availableTypes);
 
+  // Elegir un lado aleatorio (0=arriba, 1=abajo, 2=izquierda, 3=derecha)
   let side = Math.floor(Math.random() * 4);
   let x, y;
-  const margin = 200;
+  const margin = 200;  // fuera de la pantalla
 
   if (side === 0) {
     x = Math.random() * WORLD_COLS * TILE_SIZE;
@@ -361,13 +383,16 @@ function spawnEnemy() {
   }
 }
 
+// Actualiza IA, movimiento y colisión de todos los enemigos
 function updateEnemies(dt) {
   for (const enemy of enemies) {
+    // Solo actualizar animación de muerte
     if (!enemy.alive) {
       enemy.deathTime += dt;
       continue;
     }
 
+    // IA básica: perseguir al jugador
     const dx = player.x + player.width / 2 - (enemy.x + enemy.width / 2);
     const dy = player.y + player.height / 2 - (enemy.y + enemy.height / 2);
     const dist = Math.hypot(dx, dy);
@@ -378,9 +403,9 @@ function updateEnemies(dt) {
       enemy.y += (dy / dist) * speed;
     }
 
+    // Evitar que los enemigos caminen sobre obstáculos del mapa
     const ex = enemy.x + enemy.width / 2;
     const ey = enemy.y + enemy.height / 2;
-
     const col = Math.floor(ex / TILE_SIZE);
     const row = Math.floor(ey / TILE_SIZE);
 
@@ -389,15 +414,17 @@ function updateEnemies(dt) {
       col >= 0 && col < WORLD_COLS &&
       worldMap[row][col].isObstacle
     ) {
+      // Retroceder si está sobre un obstáculo
       enemy.x -= (dx / Math.max(dist, 1)) * enemy.speed * 60 * dt;
       enemy.y -= (dy / Math.max(dist, 1)) * enemy.speed * 60 * dt;
     }
 
+    // Actualizar animación
     enemy.animTime += dt * 10;
     enemy.animFrame = Math.floor(enemy.animTime) % ENEMY_RUN_FRAMES;
-
     enemy.facing = dx >= 0 ? "right" : "left";
 
+    // Detectar colisión con jugador
     const hitboxEnemy = {
       x: enemy.x,
       y: enemy.y,
@@ -412,6 +439,7 @@ function updateEnemies(dt) {
     };
 
     if (!player.invulnerable && rectsOverlap(hitboxEnemy, hitboxPlayer)) {
+      // Dañar al jugador
       player.health -= enemy.damage;
       player.invulnerable = true;
       player.invulnerableTime = 1.0;
@@ -423,6 +451,8 @@ function updateEnemies(dt) {
         10
       );
       applyScreenShake(10);
+
+      // Game over si muere
       if (player.health <= 0) {
         gameState = "gameover";
         stopMusic();
@@ -432,13 +462,15 @@ function updateEnemies(dt) {
     }
   }
 
+  // Limpiar enemigos muertos (después de animación)
   enemies = enemies.filter(enemy => enemy.alive || enemy.deathTime < 0.5);
 }
 
 // ====== DIFICULTAD ======
+// Aumenta la dificultad progresivamente con el tiempo
 function updateDifficulty() {
   const minutes = gameTime / 60000;
-  difficultyMultiplier = 1 + minutes * 0.2;
+  difficultyMultiplier = 1 + minutes * 0.2;  // +20% cada minuto
 
   const minSpawnRate = 300;
   enemySpawnRate = Math.max(1200 - minutes * 60 * 10, minSpawnRate);
@@ -447,12 +479,14 @@ function updateDifficulty() {
 // ====== UPGRADES ======
 let currentUpgradeOptions = [];
 
+// Selecciona 3 upgrades aleatorios para mostrar al jugador
 function rollUpgrades() {
   const shuffled = [...UPGRADES].sort(() => Math.random() - 0.5);
   currentUpgradeOptions = shuffled.slice(0, 3);
 }
 
 // ====== RESET GAME ======
+// Reinicia el juego a su estado inicial
 function resetGame() {
   if (!imgTerrain || !imgPlayer || !imgBullet || !imgEnemyRunSD || !imgEnemyRunSU) {
     console.warn("⏳ Assets no cargados todavía, no se puede resetear el juego.");
@@ -467,6 +501,7 @@ function resetGame() {
   enemySpawnRate = 1200;
   enemyTimer = Date.now();
 
+  // Limpiar arrays
   bullets.length = 0;
   enemies.length = 0;
   particles.length = 0;
@@ -474,12 +509,12 @@ function resetGame() {
   decorations.length = 0;
   worldMap.length = 0;
 
-  // regenerar mundo
+  // Regenerar mundo
   generateWorldMap();
   smoothWorldMap(2);
   generateDecorations();
 
-  // crear jugador nuevo
+  // Crear jugador nuevo
   player = createPlayer();
 
   // Reset stats

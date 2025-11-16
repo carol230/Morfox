@@ -1,8 +1,11 @@
-// ====== TILESET ======
+// ====== RENDERIZADO DEL MUNDO ======
+// Dibuja un tile individual del tileset en la posición especificada
 function drawTile(tileIndex, colDestino, filaDestino) {
+  // Calcular posición del tile en el tileset
   const sx = (tileIndex % tilesPerRow) * TILE_SIZE;
   const sy = Math.floor(tileIndex / tilesPerRow) * TILE_SIZE;
 
+  // Convertir a coordenadas de pantalla (aplicar cámara y shake)
   const dx = colDestino * TILE_SIZE - camX + screenShake.x;
   const dy = filaDestino * TILE_SIZE - camY + screenShake.y;
 
@@ -13,13 +16,15 @@ function drawTile(tileIndex, colDestino, filaDestino) {
   );
 }
 
-// ====== DECORACIONES (OPTIMIZADO) ======
+// Dibuja el mapa con culling (solo tiles visibles)
 function drawMap() {
+  // Calcular qué tiles están en pantalla
   const startCol = Math.floor(camX / TILE_SIZE);
   const endCol = Math.floor((camX + canvas.width) / TILE_SIZE);
   const startRow = Math.floor(camY / TILE_SIZE);
   const endRow = Math.floor((camY + canvas.height) / TILE_SIZE);
 
+  // Solo dibujar tiles visibles (optimización)
   for (let row = startRow; row <= endRow; row++) {
     for (let col = startCol; col <= endCol; col++) {
       if (row < 0 || row >= WORLD_ROWS || col < 0 || col >= WORLD_COLS) continue;
@@ -30,11 +35,13 @@ function drawMap() {
   }
 }
 
+// Dibuja decoraciones (hierba, rocas) con culling
 function drawDecorations() {
   for (const deco of decorations) {
     const dx = deco.x - camX + screenShake.x;
     const dy = deco.y - camY + screenShake.y;
 
+    // Culling: saltar si está fuera de pantalla
     if (dx + deco.width < 0 || dx > canvas.width ||
         dy + deco.height < 0 || dy > canvas.height) {
       continue;
@@ -60,13 +67,14 @@ function drawDecorations() {
   }
 }
 
-// ====== DIBUJAR PLAYER ======
+// ====== DIBUJAR JUGADOR ======
 function drawPlayer() {
   if (!player || !imgPlayer) return;
 
   const dx = player.x - camX + screenShake.x;
   const dy = player.y - camY + screenShake.y;
 
+  // Efecto de parpadeo cuando está invulnerable
   if (player.invulnerable) {
     ctx.globalAlpha = 0.5;
   }
@@ -84,6 +92,7 @@ function drawPlayer() {
 
   ctx.globalAlpha = 1.0;
 
+  // Barra de vida encima del jugador
   const barWidth = player.width;
   const barHeight = 6;
   const barX = dx;
@@ -106,6 +115,7 @@ function drawBullets() {
     const dx = b.x - camX + screenShake.x - b.width / 2;
     const dy = b.y - camY + screenShake.y - b.height / 2;
 
+    // Culling
     if (dx + b.width < 0 || dx > canvas.width ||
         dy + b.height < 0 || dy > canvas.height) {
       continue;
@@ -123,6 +133,7 @@ function drawBullets() {
         BULLET_H
       );
     } else {
+      // Fallback si no hay sprite
       ctx.fillStyle = "yellow";
       ctx.fillRect(dx, dy, b.width, b.height);
     }
@@ -135,6 +146,7 @@ function drawExplosions() {
     const dx = e.x - camX + screenShake.x;
     const dy = e.y - camY + screenShake.y;
 
+    // Fade out según vida restante
     const alpha = e.life / 0.5;
     ctx.globalAlpha = alpha;
 
@@ -147,12 +159,13 @@ function drawExplosions() {
   }
 }
 
-// ====== DIBUJAR ENEMIGOS (OPTIMIZADO) ======
+// ====== DIBUJAR ENEMIGOS ======
 function drawEnemies() {
   for (const enemy of enemies) {
     const dx = enemy.x - camX + screenShake.x;
     const dy = enemy.y - camY + screenShake.y;
 
+    // Culling
     if (dx + enemy.width < 0 || dx > canvas.width ||
         dy + enemy.height < 0 || dy > canvas.height) {
       continue;
@@ -162,6 +175,7 @@ function drawEnemies() {
     let frameWidth = ENEMY_W;
     let frameHeight = ENEMY_H;
 
+    // Seleccionar sprite según estado
     if (enemy.alive) {
       const runImg = enemy.facing === "right" ? imgEnemyRunSD : imgEnemyRunSU;
       if (runImg) {
@@ -225,13 +239,16 @@ function drawEnemies() {
   }
 }
 
-// ====== HUD ======
+// ====== INTERFAZ (HUD) ======
+// Dibuja el HUD con información del juego (tiempo, kills, vida)
 function drawHUD() {
   ctx.save();
 
+  // Panel semi-transparente
   ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
   ctx.fillRect(10, 10, 220, 90);
 
+  // Texto del HUD
   ctx.fillStyle = "white";
   ctx.font = "16px Arial";
   ctx.textAlign = "left";
@@ -247,10 +264,12 @@ function drawHUD() {
   ctx.restore();
 }
 
-// ====== PANTALLA DE CONTROLES ======
+// ====== PANTALLAS Y MENÚS ======
+// Muestra la pantalla de ayuda con los controles del juego
 function drawControlsScreenOverlay() {
   ctx.save();
 
+  // Fondo oscuro
   ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -259,6 +278,7 @@ function drawControlsScreenOverlay() {
   const panelX = (canvas.width - panelWidth) / 2;
   const panelY = (canvas.height - panelHeight) / 2;
 
+  // Panel con soporte para modo alto contraste
   ctx.fillStyle = highContrastMode ? "#000000" : "rgba(30, 30, 30, 0.9)";
   roundRect(ctx, panelX, panelY, panelWidth, panelHeight, 20);
   ctx.fill();

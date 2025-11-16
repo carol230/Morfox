@@ -1,178 +1,315 @@
-# Survive 20 Minutes - Pixel Dungeon Shooter
+# 🎮 Survive 20 Minutes - Pixel Dungeon Shooter
 
 Juego de supervivencia tipo arcade shooter con generación procedural de mundo y sistema de progresión roguelike.
 
-## Descripción
+> **Objetivo**: Sobrevive 20 minutos en un mundo procedural lleno de enemigos cada vez más difíciles. Mejora tu personaje con upgrades y utiliza granadas explosivas para eliminar hordas de enemigos.
 
-Sobrevive 20 minutos en un mundo procedural lleno de enemigos cada vez más difíciles. Mejora tu personaje con upgrades y utiliza granadas explosivas para eliminar hordas de enemigos.
+---
 
-## Controles
+## 🕹️ Controles
 
-- **WASD / Flechas**: Mover jugador
-- **ESPACIO**: Disparar granada (auto-apuntado)
-- **ESC**: Pausar/Reanudar juego
-- **M**: Silenciar/Activar audio
-- **C**: Cambiar modo de alto contraste
-- **H**: Mostrar/Ocultar pantalla de ayuda
+### Teclado y Mouse
+- **WASD / Flechas** - Mover jugador
+- **ESPACIO / Click izquierdo** - Disparar granada (auto-apuntado al enemigo más cercano)
+- **ESC** - Pausar/Reanudar juego
+- **M** - Silenciar/Activar audio
+- **C** - Cambiar modo de alto contraste (accesibilidad)
+- **H** - Mostrar/Ocultar pantalla de ayuda
 
-## Características
+### Móvil/Táctil
+- **Lado izquierdo de la pantalla** - Joystick virtual para movimiento
+- **Lado derecho de la pantalla** - Tap para disparar
 
-- **Generación procedural de mundo** 100x100 tiles
-- **12 tipos de enemigos** diferentes con mecánicas únicas
-- **14 upgrades** para mejorar tu personaje
-- **Sistema de dificultad progresiva** que aumenta con el tiempo
-- **Efectos visuales**: Partículas, explosiones, screen shake
-- **Sistema de persistencia**: Guarda high scores y estadísticas
-- **Modo de alto contraste** para accesibilidad
-- **Optimizaciones de rendimiento**: Culling, cache de sprites
+---
 
-## Estructura del Proyecto
+## ✨ Características
+
+### Mecánicas de Juego
+- 🌍 **Generación procedural de mundo** - Mapa de 100x100 tiles con terreno variado
+- 👾 **12 tipos de enemigos diferentes** - Cada uno con mecánicas únicas y dificultad progresiva
+- 💪 **14 upgrades únicos** - Mejora velocidad, daño, cadencia de fuego y más
+- 📈 **Dificultad progresiva** - Los enemigos se vuelven más fuertes con el tiempo
+- 🎯 **Sistema de auto-apuntado** - Las granadas buscan automáticamente al enemigo más cercano
+- 🔄 **Sistema de recarga** - Gestiona tu munición estratégicamente
+
+### Sistemas Técnicos
+- 💥 **Efectos visuales avanzados** - Partículas, explosiones, screen shake
+- 💾 **Persistencia de datos** - Guarda high scores y estadísticas en LocalStorage
+- ♿ **Accesibilidad** - Modo de alto contraste y controles personalizables
+- 📱 **Responsive** - Funciona en PC y dispositivos móviles
+- ⚡ **Optimizaciones de rendimiento**:
+  - Culling espacial (solo renderiza lo visible)
+  - Cache de sprites tintados
+  - Límites de entidades (máx. 100 enemigos, 100 partículas)
+  - Delta time para movimiento independiente del framerate
+
+---
+
+## 📁 Estructura del Proyecto
 
 ```
-game-main/
+Morfox/
 ├── index.html              # Punto de entrada HTML
-├── main.js                 # Orquestador principal del juego
-├── engine/                 # Módulos del motor del juego
-│   ├── entity.js          # Sistema de entidades (Player, Enemy, Bullet, Explosion)
-│   ├── loader.js          # Carga de assets (imágenes, audio)
-│   ├── stateManager.js    # Gestión de estados y UI
-│   ├── worldGenerator.js  # Generación procedural de mundo
-│   ├── effects.js         # Sistema de efectos visuales
-│   └── utils.js           # Funciones utilitarias
-├── assets/                 # Assets del juego
-│   ├── *.png              # Sprites y tilesets
-│   └── 2D Pixel Dungeon Asset Pack v2.0/
+├── main.js                 # Versión monolítica del juego (todo en un archivo)
+│
+├── engine/                 # Versión modular del motor
+│   ├── core.js            # Configuración, variables globales, helpers
+│   ├── entities.js        # Jugador, enemigos, balas, explosiones
+│   ├── render.js          # Sistema de renderizado y efectos visuales
+│   ├── input.js           # Manejo de entrada (teclado, mouse, táctil)
+│   └── main.js            # Game loop y orquestación
+│
+├── assets/                 # Recursos gráficos
+│   ├── terrain.png        # Tileset del suelo
+│   ├── player.png         # Sprites del jugador
+│   ├── bullet1.png        # Sprite de granada
+│   ├── Run*.png           # Animaciones de enemigos
+│   ├── Death*.png         # Animaciones de muerte
+│   ├── Grass*.png         # Decoraciones de hierba
+│   └── Rock*.png          # Decoraciones de rocas
+│
 ├── sounds/                 # Archivos de audio
-└── net/                    # Módulos de red (no implementado)
+│   ├── music.mp3          # Música de fondo
+│   ├── shoot.mp3          # Sonido de disparo
+│   ├── explosion.mp3      # Sonido de explosión
+│   ├── hit.mp3            # Sonido de daño al jugador
+│   └── levelup.mp3        # Sonido de subida de nivel
+│
+└── game/                   # Recursos adicionales del juego
 ```
 
-## Arquitectura del Código
+---
 
-### Módulos principales
+## 🎯 Sistema de Upgrades
 
-#### `main.js`
-Punto de entrada y orquestador del juego. Coordina todos los sistemas sin contener implementaciones específicas.
+Al subir de nivel, elige entre 3 upgrades aleatorios:
 
-#### `engine/entity.js`
-Maneja todas las entidades del juego:
-- **Player**: Clase del jugador con stats, movimiento y combate
-- **BulletSystem**: Sistema de proyectiles con explosiones
-- **ExplosionSystem**: Manejo de explosiones con área de daño
-- **EnemySystem**: Spawn y AI de enemigos con 12 tipos diferentes
+| Upgrade | Efecto |
+|---------|--------|
+| **Velocidad +** | Aumenta velocidad de movimiento |
+| **Vida Máxima +** | +20 HP máximo y cura completa |
+| **Cadencia +** | Dispara más rápido |
+| **Daño Explosión +** | Aumenta daño de explosión |
+| **Radio Explosión +** | Mayor área de explosión |
+| **Granada Extra** | Dispara una granada adicional por disparo |
+| **Munición Máxima +** | +2 granadas en el cargador |
+| **Recarga Rápida** | Reduce tiempo de recarga |
+| **Granadas Rápidas** | Aumenta velocidad de proyectiles |
+| **Crítico +** | +10% probabilidad de golpe crítico |
+| **Dispersión +** | Mayor ángulo de disparo (útil con Granada Extra) |
+| **Robo de Vida** | Recupera HP al eliminar enemigos |
+| **Curación** | Restaura 50 HP instantáneamente |
+| **Explosión Doble** | Aumenta radio y daño de explosión |
 
-#### `engine/loader.js`
-Gestión de carga de recursos:
-- **AssetLoader**: Carga de imágenes y audio
-- Pantallas de carga y error
-- Sistema de audio con múltiples canales
+---
 
-#### `engine/stateManager.js`
-Gestión de estados del juego:
-- **StateManager**: Estados (menu, playing, paused, levelup, gameover, victory)
-- **UIManager**: Renderizado de HUD, menús y pantallas
-- **InputManager**: Manejo de eventos de teclado y ratón
+## 👾 Tipos de Enemigos
 
-#### `engine/worldGenerator.js`
-Generación y renderizado del mundo:
-- **WorldGenerator**: Generación procedural de terreno y decoraciones
-- **Camera**: Sistema de cámara que sigue al jugador
-- Renderizado optimizado con culling
+Los enemigos aparecen progresivamente según el tiempo de juego:
 
-#### `engine/effects.js`
-Efectos visuales:
-- **ParticleSystem**: Sistema de partículas con física
-- **ScreenShake**: Efecto de sacudida de pantalla
-- **SpriteCache**: Cache de sprites tintados para rendimiento
+| Enemigo | Aparece en | Características |
+|---------|-----------|-----------------|
+| 🟣 **Zombie** | Inicio | Enemigo básico, velocidad y vida moderadas |
+| 🔴 **Runner** | 30s | Muy rápido pero débil |
+| 🟢 **Brute** | 1.5min | Lento pero muy resistente |
+| 🟠 **Imp** | 1min | Pequeño, aparece en enjambre |
+| 🟣 **Spitter** | 2min | Ataque a distancia |
+| 🟠 **Berserker** | 2.5min | Veloz y fuerte |
+| 🔵 **Heavy** | 3min | Extremadamente resistente |
+| ⚫ **Shadow** | 4min | El más rápido del juego |
+| 🔷 **Elite** | 5min | Enemigo balanceado avanzado |
+| 🔴 **Boss** | 6min | Jefe con vida masiva |
+| 🟠 **Champion** | 7min | Enemigo de élite poderoso |
+| 🟣 **Nightmare** | 8min | El enemigo más difícil |
 
-#### `engine/utils.js`
-Funciones utilitarias:
-- Detección de colisiones
-- Helpers matemáticos
-- Funciones de renderizado (roundRect, wrapText)
-- Formateo de datos
+*La dificultad aumenta un 15% cada minuto, haciendo que todos los enemigos sean más rápidos y resistentes.*
 
-## Sistema de Upgrades
+---
 
-El juego incluye 14 upgrades diferentes:
-- Velocidad +
-- Vida Máxima +
-- Cadencia +
-- Daño Explosión +
-- Radio Explosión +
-- Granada Extra
-- Munición Máxima +
-- Recarga Rápida
-- Granadas Rápidas
-- Crítico +
-- Dispersión +
-- Robo de Vida
-- Curación
-- Explosión Doble
+## 🚀 Ejecutar el Juego
 
-## Tipos de Enemigos
+### Opción 1: Live Server (Recomendado para desarrollo)
 
-1. **Zombie** - Enemigo básico
-2. **Runner** - Rápido pero débil
-3. **Brute** - Lento pero resistente
-4. **Imp** - Pequeño y en enjambre
-5. **Spitter** - Ataque a distancia
-6. **Berserker** - Veloz y fuerte
-7. **Heavy** - Muy resistente
-8. **Shadow** - Extremadamente rápido
-9. **Elite** - Enemigo balanceado avanzado
-10. **Boss** - Jefe con mucha vida
-11. **Champion** - Enemigo de élite
-12. **Nightmare** - El enemigo más difícil
-
-## Ejecutar el Juego
-
-### Opción 1: Live Server (Recomendado)
-1. Instalar extensión "Live Server" en VS Code
-2. Click derecho en `index.html` → "Open with Live Server"
+1. Instalar extensión **Live Server** en VS Code
+2. Click derecho en `index.html` → **Open with Live Server**
+3. El juego se abrirá en `http://localhost:5500`
 
 ### Opción 2: Servidor HTTP local
+
+**Python 3:**
 ```bash
-# Python 3
 python -m http.server 8000
+```
 
-# Python 2
+**Python 2:**
+```bash
 python -m SimpleHTTPServer 8000
+```
 
-# Node.js (con http-server)
+**Node.js (con http-server):**
+```bash
 npx http-server
 ```
 
-Luego abrir `http://localhost:8000` en el navegador.
+Luego abrir `http://localhost:8000` en tu navegador.
 
-## Tecnologías Utilizadas
+### Opción 3: Abrir directamente
 
-- **HTML5 Canvas**: Renderizado 2D
-- **JavaScript ES6 Modules**: Arquitectura modular
-- **Web Audio API**: Sistema de audio
-- **LocalStorage API**: Persistencia de datos
-- **RequestAnimationFrame**: Game loop optimizado
+⚠️ **Nota**: Algunos navegadores no permiten cargar recursos locales por seguridad (CORS policy). Se recomienda usar un servidor local.
 
-## Optimizaciones
+---
 
-- **Culling espacial**: Solo renderiza elementos visibles
-- **Cache de sprites**: Sprites tintados pre-renderizados
-- **Object pooling**: Reutilización de partículas y explosiones
-- **Límites de entidades**: Máximo 100 enemigos y 100 partículas
-- **Delta time**: Movimiento independiente del framerate
+## 🛠️ Tecnologías Utilizadas
 
-## Documentación del Código
+- **HTML5 Canvas API** - Renderizado 2D de alto rendimiento
+- **JavaScript ES6+** - Lógica del juego (Vanilla JS, sin frameworks)
+- **Web Audio API** - Sistema de audio con múltiples canales
+- **LocalStorage API** - Persistencia de datos del jugador
+- **RequestAnimationFrame** - Game loop optimizado a 60 FPS
 
-Todo el código está completamente documentado con **JSDoc**:
-- Tipos de parámetros y retornos
-- Descripciones de funciones y métodos
-- Ejemplos de uso donde es relevante
-- Documentación de clases y propiedades
+---
 
-## Créditos
+## 📐 Arquitectura del Código
 
-- **Assets**: 2D Pixel Dungeon Asset Pack v2.0
-- **Desarrollo**: Proyecto académico
+### Versión Modular (`engine/`)
 
-## Licencia
+El juego está dividido en módulos para mejor organización:
+
+#### **core.js**
+- Configuración del canvas y constantes globales
+- Tipos de enemigos con sus estadísticas
+- Sistema de upgrades
+- Helpers utilitarios (detección de colisiones, dibujo, etc.)
+- Generación y suavizado del mapa procedural
+- Sistema de decoraciones (hierba y rocas)
+
+#### **entities.js**
+- `createPlayer()` - Inicializa el jugador con todas sus stats
+- `updatePlayer()` - Maneja movimiento, colisiones y animaciones
+- `shootBullet()` - Sistema de disparo con auto-apuntado
+- `updateEnemies()` - IA de enemigos y sistema de spawn
+- `updateDifficulty()` - Escalado de dificultad progresivo
+
+#### **render.js**
+- `drawMap()` - Renderiza el tilemap con culling
+- `drawDecorations()` - Dibuja hierba y rocas con optimización
+- `drawPlayer()`, `drawEnemies()`, `drawBullets()` - Renderizado de entidades
+- `drawExplosions()`, `drawParticles()` - Efectos visuales
+- `drawHUD()` - Interfaz de usuario (vida, munición, nivel, etc.)
+- Pantallas de menú, pausa, level up, game over y victoria
+
+#### **input.js**
+- Manejo de teclado (WASD, flechas, teclas especiales)
+- Manejo de mouse (apuntado y disparo)
+- Controles táctiles para móviles (joystick virtual)
+- Sistema de pause y menús interactivos
+
+#### **main.js**
+- `update(dt)` - Actualiza lógica del juego cada frame
+- `draw()` - Renderiza todos los elementos visuales
+- `gameLoop()` - Loop principal del juego a 60 FPS
+- `init()` - Inicialización y carga de assets
+
+---
+
+## 🎨 Características Técnicas Avanzadas
+
+### Sistema de Partículas
+- Física realista con gravedad
+- Pool de partículas limitado para rendimiento
+- Diferentes colores según el efecto (explosión, daño, etc.)
+
+### Cache de Sprites
+- Los enemigos se tiñen con colores únicos
+- Sprites pre-renderizados en cache para evitar re-dibujar
+- Mejora significativa del rendimiento con múltiples enemigos
+
+### Culling Espacial
+- Solo renderiza entidades dentro del viewport de la cámara
+- Enemigos muy lejanos tienen física reducida
+- Ahorro de recursos en mapas grandes
+
+### Sistema de Cámara
+- Sigue suavemente al jugador (smooth follow)
+- Límites del mundo para evitar mostrar áreas vacías
+- Screen shake integrado para feedback visual
+
+---
+
+## 🐛 Troubleshooting
+
+### El juego no carga / Pantalla negra
+- Asegúrate de estar ejecutando desde un servidor local (no `file://`)
+- Abre la consola del navegador (F12) para ver errores
+- Verifica que todos los archivos en `assets/` y `sounds/` existen
+
+### Audio no funciona
+- Algunos navegadores bloquean audio automático
+- Haz click en la pantalla para permitir reproducción de audio
+- Verifica que los archivos MP3 existan en la carpeta `sounds/`
+
+### FPS bajos en móvil
+- El juego usa resolución reducida automáticamente en móviles (960x540)
+- Cierra otras aplicaciones para liberar memoria
+- Límite de 100 enemigos activos para mantener rendimiento
+
+### Controles táctiles no responden
+- Verifica que `isTouchDevice` se detecte correctamente
+- La pantalla se divide: izquierda = movimiento, derecha = disparo
+- En menús y upgrades, usa tap normal
+
+---
+
+## 📊 Sistema de Estadísticas
+
+El juego guarda automáticamente en LocalStorage:
+
+### High Scores
+- Tiempo más largo de supervivencia
+- Mayor número de kills en una partida
+- Nivel más alto alcanzado
+
+### Estadísticas Totales
+- Total de partidas jugadas
+- Total de kills acumulados
+- Total de muertes
+- Tiempo total de juego
+
+---
+
+## 🎓 Propósito Educativo
+
+Este proyecto fue creado con fines educativos para demostrar:
+- Arquitectura de un juego en JavaScript vanilla
+- Optimizaciones de rendimiento en Canvas 2D
+- Generación procedural de contenido
+- Sistemas de juego roguelike
+- Responsive design y accesibilidad
+
+---
+
+## 📝 Créditos
+
+- **Assets Gráficos**: 2D Pixel Dungeon Asset Pack v2.0
+- **Audio**: Efectos de sonido y música libre de derechos
+- **Desarrollo**: Proyecto educativo
+
+---
+
+## 📄 Licencia
 
 Proyecto educativo - Ver licencias de assets individuales en sus respectivas carpetas.
+
+---
+
+## 🎮 Consejos para Jugar
+
+1. **Gestiona tu munición** - Solo tienes 5 granadas, recarga estratégicamente
+2. **Prioriza upgrades** - "Granada Extra" + "Dispersión" = poder masivo
+3. **Mantén la distancia** - Las explosiones tienen área de efecto
+4. **Usa obstáculos** - Las rocas bloquean enemigos (pero también a ti)
+5. **Auto-apuntado** - Las granadas siempre van al enemigo más cercano
+6. **Críticos** - Busca upgrades de crítico para daño explosivo
+7. **Robo de vida** - Esencial para partidas largas
+
+**¡Buena suerte sobreviviendo los 20 minutos!** 🎯
