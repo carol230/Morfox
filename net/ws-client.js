@@ -1,0 +1,1 @@
+// Opcional: cliente WebSocket (bonus)
