@@ -1,7 +1,4 @@
 /**
- * ====== ENTITIES.JS - Manejo de todas las entidades del juego ======
- *
- * Este módulo gestiona todas las entidades del juego incluyendo:
  * - Jugador (movimiento, combate, stats)
  * - Enemigos (IA, spawning, tipos)
  * - Proyectiles (balas, granadas)
@@ -14,7 +11,6 @@
 
 import * as core from './core.js';
 
-// ====== TIPOS DE ENEMIGOS EXTENDIDOS ======
 export const ENEMY_TYPES_EXTENDED = {
     FAST: {
         name: "Runner",
@@ -152,14 +148,12 @@ export const ENEMY_TYPES_EXTENDED = {
 
 export const ALL_ENEMY_TYPES = { ...core.ENEMY_TYPES, ...ENEMY_TYPES_EXTENDED };
 
-// ====== VARIABLES DE ENTIDADES ======
 export let player = null;
 export let bullets = [];
 export let enemies = [];
 export let explosions = [];
 export let particles = [];
 
-// ====== SISTEMA DE UPGRADES ======
 export const UPGRADES = [
     {
         name: "Velocidad +",
@@ -247,11 +241,25 @@ export const UPGRADES = [
 
 export let currentUpgradeOptions = [];
 
-// ====== FUNCIONES HELPER ======
+/**
+ * Retorna un elemento aleatorio del array
+ * @param {Array} arr
+ */
 export function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+/**
+ * Verifica si dos rectángulos se superponen
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} aw
+ * @param {number} ah
+ * @param {number} bx
+ * @param {number} by
+ * @param {number} bw
+ * @param {number} bh
+ */
 export function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
   return (
     ax < bx + bw &&
@@ -264,10 +272,21 @@ export function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
 // Importar decorations desde el contexto global que se creará en main
 let decorations = [];
 
+/**
+ * Establece el array de decoraciones del mundo
+ * @param {Array} decs
+ */
 export function setDecorations(decs) {
   decorations = decs;
 }
 
+/**
+ * Verifica colisión con obstáculos
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ */
 export function checkObstacleCollision(x, y, width, height) {
   for (let obj of decorations) {
     if (!obj.isObstacle) continue;
@@ -282,13 +301,19 @@ export function checkObstacleCollision(x, y, width, height) {
   return false;
 }
 
-// ====== SCREEN SHAKE ======
+/**
+ * Aplica un efecto de vibración a la pantalla
+ * @param {number} intensity
+ */
 export function applyScreenShake(intensity) {
     let shake = core.screenShake;
     shake.intensity = intensity;
     core.setScreenShake(shake);
 }
 
+/**
+ * Actualiza el efecto de vibración de pantalla
+ */
 export function updateScreenShake() {
     let shake = core.screenShake;
     if (shake.intensity > 0) {
@@ -305,6 +330,17 @@ export function updateScreenShake() {
 }
 
 // Crea sprites con tint de color usando cache para optimizar
+/**
+ * Obtiene un sprite con tinte de color aplicado
+ * @param {HTMLImageElement} img
+ * @param {number} sx
+ * @param {number} sy
+ * @param {number} width
+ * @param {number} height
+ * @param {string} color
+ * @param {string} facing
+ * @param {Object} type
+ */
 export function getTintedSprite(img, sx, sy, width, height, color, facing, type) {
   const cacheKey = `${type}_${facing}_${color}`;
 
@@ -330,7 +366,13 @@ export function getTintedSprite(img, sx, sy, width, height, color, facing, type)
   return tempCanvas;
 }
 
-// ====== PARTÍCULAS ======
+/**
+ * Crea partículas en una posición
+ * @param {number} x
+ * @param {number} y
+ * @param {number} count
+ * @param {string} color
+ */
 export function createParticles(x, y, count, color) {
     if (particles.length >= core.MAX_PARTICLES) return;
 
@@ -349,6 +391,10 @@ export function createParticles(x, y, count, color) {
     }
 }
 
+/**
+ * Actualiza el estado de todas las partículas
+ * @param {number} dt
+ */
 export function updateParticles(dt) {
     particles.forEach(p => {
         p.x += p.vx * dt;
@@ -361,7 +407,9 @@ export function updateParticles(dt) {
     particles = particles.filter(p => p.life > 0);
 }
 
-// ====== JUGADOR ======
+/**
+ * Crea el objeto jugador con sus stats iniciales
+ */
 export function createPlayer() {
   const playerWidth = core.PLAYER_W * core.PLAYER_SCALE;
   const playerHeight = core.PLAYER_H * core.PLAYER_SCALE;
@@ -420,6 +468,10 @@ export function createPlayer() {
   };
 }
 
+/**
+ * Establece el objeto jugador
+ * @param {p}
+ */
 export function setPlayer(p) {
   player = p;
 }
@@ -434,11 +486,20 @@ let touchInput = {
   deltaY: 0
 };
 
+/**
+ * Establece las referencias de input
+ * @param {k}
+ * @param {t}
+ */
 export function setInput(k, t) {
   keys = k;
   touchInput = t;
 }
 
+/**
+ * Actualiza el estado del jugador
+ * @param {number} dt
+ */
 export function updatePlayer(dt) {
   if (!player || core.gameState !== "playing") return;
 
@@ -534,6 +595,9 @@ export function updatePlayer(dt) {
   updateCamera();
 }
 
+/**
+ * updateCamera
+ */
 export function updateCamera() {
   if (!player) return;
 
@@ -551,6 +615,9 @@ export function updateCamera() {
   core.setCamY(camY);
 }
 
+/**
+ * findNearestEnemy
+ */
 export function findNearestEnemy() {
   if (enemies.length === 0 || !player) return null;
 
@@ -575,7 +642,9 @@ export function findNearestEnemy() {
   return nearest;
 }
 
-// ====== BALAS Y EXPLOSIONES ======
+/**
+ * Dispara una o varias granadas
+ */
 export function shootBullet() {
   if (!player || core.gameState !== "playing") return;
   if (player.isReloading) return;
@@ -630,6 +699,10 @@ export function shootBullet() {
   core.playSound('shoot');
 }
 
+/**
+ * Actualiza el estado de todos los proyectiles
+ * @param {number} dt
+ */
 export function updateBullets(dt) {
   bullets.forEach(b => {
     b.animTime += dt * 10;
@@ -668,6 +741,13 @@ export function updateBullets(dt) {
   }
 }
 
+/**
+ * Crea una explosión en una posición
+ * @param {number} x
+ * @param {number} y
+ * @param {number} radius
+ * @param {number} damage
+ */
 export function createExplosion(x, y, radius, damage) {
   explosions.push({
     x: x,
@@ -729,6 +809,10 @@ export function createExplosion(x, y, radius, damage) {
   });
 }
 
+/**
+ * Actualiza el estado de todas las explosiones
+ * @param {number} dt
+ */
 export function updateExplosions(dt) {
   explosions.forEach(e => {
     e.radius += (e.maxRadius - e.radius) * 0.3;
@@ -738,11 +822,17 @@ export function updateExplosions(dt) {
   explosions = explosions.filter(e => e.life > 0);
 }
 
-// ====== ENEMIGOS ======
+/**
+ * Obtiene los tipos de enemigos disponibles según el tiempo
+ */
 export function getAvailableEnemyTypes() {
   return Object.values(ALL_ENEMY_TYPES).filter(type => core.gameTime >= type.minTime);
 }
 
+/**
+ * Selecciona un tipo de enemigo aleatorio ponderado
+ * @param {availableTypes}
+ */
 export function selectRandomEnemyType(availableTypes) {
   let totalWeight = availableTypes.reduce((sum, type) => sum + type.weight, 0);
   let random = Math.random() * totalWeight;
@@ -758,6 +848,9 @@ export function selectRandomEnemyType(availableTypes) {
   return availableTypes[0];
 }
 
+/**
+ * Genera un nuevo enemigo fuera de la pantalla
+ */
 export function spawnEnemy() {
   if (core.gameState !== "playing") return;
 
@@ -807,6 +900,10 @@ export function spawnEnemy() {
   });
 }
 
+/**
+ * Actualiza el estado de todos los enemigos
+ * @param {number} dt
+ */
 export function updateEnemies(dt) {
   if (!player || core.gameState !== "playing") return;
 
@@ -889,7 +986,9 @@ export function updateEnemies(dt) {
   }
 }
 
-// ====== UPGRADES ======
+/**
+ * Genera 3 opciones aleatorias de mejora
+ */
 export function generateUpgradeOptions() {
   currentUpgradeOptions = [];
   let availableUpgrades = [...UPGRADES];
@@ -902,7 +1001,9 @@ export function generateUpgradeOptions() {
   }
 }
 
-// ====== DIFICULTAD ======
+/**
+ * Actualiza la dificultad progresiva del juego
+ */
 export function updateDifficulty() {
   let minutes = core.gameTime / 60000;
   let mult = 1 + (minutes * 0.15);
@@ -912,7 +1013,9 @@ export function updateDifficulty() {
   core.setEnemySpawnRate(spawnRate);
 }
 
-// ====== RESET ======
+/**
+ * Reinicia todas las entidades del juego
+ */
 export function resetEntities() {
   bullets.length = 0;
   enemies.length = 0;

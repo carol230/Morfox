@@ -1,11 +1,8 @@
-// ====== MAIN.JS - Punto de entrada y coordinación del juego ======
-
 import * as core from './core.js';
 import * as entities from './entities.js';
 import * as render from './render.js';
 import * as input from './input.js';
 
-// ====== VARIABLES DEL JUEGO ======
 const worldMap = [];
 const decorations = [];
 let fps = 60;
@@ -13,7 +10,6 @@ let fpsFrames = 0;
 let fpsTime = 0;
 let lastTime = 0;
 
-// ====== FUNCIONES DE GENERACIÓN DEL MUNDO ======
 function generateWorldMap() {
   for (let row = 0; row < core.WORLD_ROWS; row++) {
     worldMap[row] = [];
@@ -133,24 +129,20 @@ function generateDecorations() {
   }
 }
 
-// ====== CARGA DE ASSETS ======
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = src;
     img.onload = () => {
-      console.log(`✅ Cargado: ${src}`);
       resolve(img);
     };
     img.onerror = (e) => {
-      console.error(`❌ Error cargando: ${src}`, e);
       reject(new Error(`No se pudo cargar: ${src}`));
     };
   });
 }
 
 async function loadAssets() {
-  console.log("🎨 Cargando assets...");
 
   try {
     const imgTerrain = await loadImage("./assets/terrain.png");
@@ -188,19 +180,15 @@ async function loadAssets() {
       tilesPerRow
     });
 
-    console.log("✅ Assets cargados!");
-    console.log(`   - Player: ${core.PLAYER_W}x${core.PLAYER_H}`);
-    console.log(`   - Enemy: ${core.ENEMY_W}x${core.ENEMY_H}`);
-    console.log(`   - Tiles por fila: ${tilesPerRow}`);
   } catch (error) {
-    console.error("❌ Error fatal cargando assets:", error);
     throw error;
   }
 }
 
-// ====== RESET GAME ======
+/**
+ * Reinicia el juego a su estado inicial
+ */
 export function resetGame() {
-  console.log("🔄 Reiniciando juego...");
 
   decorations.length = 0;
   worldMap.length = 0;
@@ -214,7 +202,6 @@ export function resetGame() {
   core.setEnemyTimer(0);
 }
 
-// ====== GAME LOOP ======
 function update(dt) {
   if (core.gameState === "playing") {
     core.addGameTime(dt * 1000);
@@ -303,7 +290,6 @@ function loop(timestamp) {
   requestAnimationFrame(loop);
 }
 
-// ====== PANTALLAS DE CARGA Y ERROR ======
 function drawLoading() {
   core.ctx.fillStyle = "#0f0f1a";
   core.ctx.fillRect(0, 0, core.canvas.width, core.canvas.height);
@@ -341,9 +327,7 @@ function drawError(error) {
   core.ctx.textAlign = "left";
 }
 
-// ====== INICIO ======
 (async function start() {
-  console.log("🎮 Iniciando juego...");
 
   drawLoading();
 
@@ -375,10 +359,8 @@ function drawError(error) {
 
     input.setLoadingState(false);
 
-    console.log("🎮 ¡Juego listo! Haz clic para comenzar.");
     requestAnimationFrame(loop);
   } catch (error) {
-    console.error("❌ Error fatal:", error);
     input.setLoadingState(false, error);
     drawError(error);
   }

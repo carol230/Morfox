@@ -121,26 +121,48 @@ export let gameTime = 0;
 export let survivalTime = 20 * 60 * 1000;
 export let startTime = 0;
 export let kills = 0;
+/**
+ * Establece el estado actual del juego
+ * @param {string} state
+ */
 export function setGameState(state) {
     gameState = state;
 }
 
+/**
+ * Establece el tiempo de juego
+ * @param {number} time
+ */
 export function setGameTime(time) {
     gameTime = time;
 }
 
+/**
+ * Incrementa el tiempo de juego
+ * @param {number} deltaTime
+ */
 export function addGameTime(deltaTime) {
     gameTime += deltaTime;
 }
 
+/**
+ * Establece el tiempo de inicio
+ * @param {number} time
+ */
 export function setStartTime(time) {
     startTime = time;
 }
 
+/**
+ * Incrementa el contador de kills
+ */
 export function incrementKills() {
     kills++;
 }
 
+/**
+ * Reinicia el contador de kills a cero
+ */
 export function resetKills() {
     kills = 0;
 }
@@ -149,10 +171,18 @@ export function resetKills() {
 export let camX = 0;
 export let camY = 0;
 
+/**
+ * Establece la posición X de la cámara
+ * @param {number} x
+ */
 export function setCamX(x) {
     camX = x;
 }
 
+/**
+ * Establece la posición Y de la cámara
+ * @param {number} y
+ */
 export function setCamY(y) {
     camY = y;
 }
@@ -162,14 +192,26 @@ export let enemyTimer = 0;
 export let enemySpawnRate = 1200;
 export let difficultyMultiplier = 1;
 
+/**
+ * Establece el temporizador de spawn de enemigos
+ * @param {number} time
+ */
 export function setEnemyTimer(time) {
     enemyTimer = time;
 }
 
+/**
+ * Establece el multiplicador de dificultad
+ * @param {number} mult
+ */
 export function setDifficultyMultiplier(mult) {
     difficultyMultiplier = mult;
 }
 
+/**
+ * Establece la tasa de generación de enemigos
+ * @param {number} rate
+ */
 export function setEnemySpawnRate(rate) {
     enemySpawnRate = rate;
 }
@@ -177,6 +219,10 @@ export function setEnemySpawnRate(rate) {
 // Efectos de pantalla
 export let screenShake = { x: 0, y: 0, intensity: 0 };
 
+/**
+ * Establece el efecto de vibración de pantalla
+ * @param {Object} shake
+ */
 export function setScreenShake(shake) {
     screenShake = shake;
 }
@@ -185,15 +231,24 @@ export function setScreenShake(shake) {
 export let highContrastMode = false;
 export let showControlsScreen = false;
 
+/**
+ * Alterna el modo de alto contraste
+ */
 export function toggleHighContrast() {
   highContrastMode = !highContrastMode;
-  console.log(highContrastMode ? "🎨 Modo alto contraste activado" : "🎨 Modo normal activado");
 }
 
+/**
+ * Alterna la visibilidad de la pantalla de controles
+ */
 export function toggleControlsScreen() {
     showControlsScreen = !showControlsScreen;
 }
 
+/**
+ * Establece la visibilidad de la pantalla de controles
+ * @param {boolean} value
+ */
 export function setShowControlsScreen(value) {
     showControlsScreen = value;
 }
@@ -219,6 +274,10 @@ export let imgGrass = [];
 export let imgRock = [];
 export let tilesPerRow = 0;
 
+/**
+ * Establece los recursos gráficos del juego
+ * @param {Object} assets
+ */
 export function setAssets(assets) {
     if (assets.imgPlayer) imgPlayer = assets.imgPlayer;
     if (assets.imgBullet) imgBullet = assets.imgBullet;
@@ -256,6 +315,9 @@ export const gameData = {
     totalPlayTime: 0
   }
 };
+/**
+ * Carga los datos guardados desde localStorage
+ */
 export function loadGameData() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -263,21 +325,24 @@ export function loadGameData() {
       const data = JSON.parse(saved);
       Object.assign(gameData.highScores, data.highScores || {});
       Object.assign(gameData.stats, data.stats || {});
-      console.log("✅ Datos cargados desde localStorage");
     }
   } catch (error) {
-    console.warn("⚠️ Error cargando datos:", error);
   }
 }
 
+/**
+ * Guarda los datos del juego en localStorage
+ */
 export function saveGameData() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(gameData));
-    console.log("💾 Datos guardados");
   } catch (error) {
-    console.warn("⚠️ Error guardando datos:", error);
   }
 }
+/**
+ * Actualiza los récords del juego
+ * @param {Object} player
+ */
 export function updateHighScores(player) {
   let updated = false;
 
@@ -298,6 +363,9 @@ export function updateHighScores(player) {
 
   return updated;
 }
+/**
+ * Actualiza las estadísticas globales del juego
+ */
 export function updateStats() {
   gameData.stats.totalGames++;
   gameData.stats.totalKills += kills;
@@ -318,6 +386,9 @@ export const sounds = {
 
 export let audioEnabled = true;
 export let audioMuted = false;
+/**
+ * Alterna el silenciamiento del audio
+ */
 export function toggleMute() {
   audioMuted = !audioMuted;
 
@@ -325,8 +396,10 @@ export function toggleMute() {
     sounds.music.muted = audioMuted;
   }
 
-  console.log(audioMuted ? "🔇 Audio silenciado" : "🔊 Audio activado");
 }
+/**
+ * Carga los archivos de audio del juego
+ */
 export function loadAudio() {
   try {
     sounds.music = new Audio('./sounds/music.mp3');
@@ -345,37 +418,41 @@ export function loadAudio() {
     sounds.levelup = new Audio('./sounds/levelup.mp3');
     sounds.levelup.volume = 0.35;
 
-    console.log("✅ Audio cargado");
   } catch (error) {
-    console.warn("⚠️ No se pudieron cargar algunos archivos de audio:", error);
     audioEnabled = false;
   }
 }
+/**
+ * Reproduce un efecto de sonido
+ * @param {string} soundName
+ */
 export function playSound(soundName) {
   if (!audioEnabled || !sounds[soundName] || audioMuted) return;
 
   try {
     const sound = sounds[soundName].cloneNode();
     sound.volume = sounds[soundName].volume;
-    sound.play().catch(e => console.warn("Error reproduciendo sonido:", e));
   } catch (e) {
-    console.warn("Error al reproducir sonido:", e);
   }
 }
+/**
+ * Reproduce la música de fondo
+ */
 export function playMusic() {
   if (!audioEnabled || !sounds.music) return;
 
   try {
     sounds.music.play().catch(e => {
-      console.warn("Error reproduciendo música:", e);
       document.addEventListener('click', () => {
         sounds.music.play().catch(() => {});
       }, { once: true });
     });
   } catch (e) {
-    console.warn("Error al reproducir música:", e);
   }
 }
+/**
+ * Detiene la música de fondo
+ */
 export function stopMusic() {
   if (sounds.music) {
     sounds.music.pause();

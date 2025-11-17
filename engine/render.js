@@ -1,5 +1,3 @@
-// ====== RENDER.JS - Todas las funciones de renderizado del juego ======
-
 import * as core from './core.js';
 import * as entities from './entities.js';
 
@@ -10,6 +8,10 @@ let decorations = [];
 let fps = 60;
 let survivalTime = 0;
 
+/**
+ * Establece los datos necesarios para el renderizado
+ * @param {Object} data
+ */
 export function setRenderData(data) {
   if (data.mousePos) mousePos = data.mousePos;
   if (data.worldMap) worldMap = data.worldMap;
@@ -18,7 +20,15 @@ export function setRenderData(data) {
   if (data.survivalTime) survivalTime = data.survivalTime;
 }
 
-// ====== FUNCIONES HELPER ======
+/**
+ * Dibuja un rectángulo con esquinas redondeadas
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @param {number} radius
+ */
 export function roundRect(ctx, x, y, width, height, radius = 8) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -33,6 +43,11 @@ export function roundRect(ctx, x, y, width, height, radius = 8) {
     ctx.closePath();
 }
 
+/**
+ * Divide un texto en líneas según un ancho máximo
+ * @param {string} text
+ * @param {number} maxWidth
+ */
 export function wrapText(text, maxWidth) {
     let words = text.split(' ');
     let lines = [];
@@ -52,7 +67,6 @@ export function wrapText(text, maxWidth) {
     return lines;
 }
 
-// ====== TILESET ======
 function drawTile(tileIndex, colDestino, filaDestino) {
   const sx = (tileIndex % core.tilesPerRow) * core.TILE_SIZE;
   const sy = Math.floor(tileIndex / core.tilesPerRow) * core.TILE_SIZE;
@@ -67,6 +81,9 @@ function drawTile(tileIndex, colDestino, filaDestino) {
   );
 }
 
+/**
+ * Dibuja el mapa de tiles del mundo
+ */
 export function drawMap() {
   const startCol = Math.floor(core.camX / core.TILE_SIZE);
   const startRow = Math.floor(core.camY / core.TILE_SIZE);
@@ -84,7 +101,9 @@ export function drawMap() {
   }
 }
 
-// ====== DECORACIONES ======
+/**
+ * Dibuja las decoraciones del mundo
+ */
 export function drawDecorations() {
   const minX = core.camX - 32;
   const maxX = core.camX + core.canvas.width + 32;
@@ -131,7 +150,9 @@ export function drawDecorations() {
   });
 }
 
-// ====== DIBUJAR JUGADOR ======
+/**
+ * Dibuja el jugador con animaciones
+ */
 export function drawPlayer() {
   const player = entities.player;
   if (!core.imgPlayer || !player) return;
@@ -163,7 +184,9 @@ export function drawPlayer() {
   );
 }
 
-// ====== DIBUJAR BALAS ======
+/**
+ * Dibuja todos los proyectiles activos
+ */
 export function drawBullets() {
   if (!core.imgBullet) return;
 
@@ -199,7 +222,9 @@ export function drawBullets() {
   });
 }
 
-// ====== DIBUJAR EXPLOSIONES ======
+/**
+ * Dibuja todas las explosiones activas
+ */
 export function drawExplosions() {
   const margin = 100;
   const minX = core.camX - margin;
@@ -232,7 +257,9 @@ export function drawExplosions() {
   });
 }
 
-// ====== DIBUJAR PARTÍCULAS ======
+/**
+ * Dibuja todas las partículas activas
+ */
 export function drawParticles() {
   const margin = 20;
   const minX = core.camX - margin;
@@ -254,7 +281,9 @@ export function drawParticles() {
   core.ctx.globalAlpha = 1;
 }
 
-// ====== DIBUJAR ENEMIGOS ======
+/**
+ * Dibuja todos los enemigos con animaciones
+ */
 export function drawEnemies() {
   const nearestEnemy = entities.findNearestEnemy();
 
@@ -343,7 +372,9 @@ export function drawEnemies() {
   });
 }
 
-// ====== HUD ======
+/**
+ * Dibuja la interfaz de usuario
+ */
 export function drawHUD() {
   const player = entities.player;
   if (!player) return;
@@ -355,12 +386,10 @@ export function drawHUD() {
   const textColor = core.highContrastMode ? "#000000" : "#fff";
   const bgColor = core.highContrastMode ? "#ffffff" : "rgba(31, 31, 46, 0.9)";
 
-  // ===== PANEL CENTRAL SUPERIOR =====
   const panelWidth = 520;
   const panelX = (core.canvas.width - panelWidth) / 2;
   const panelY = padding;
 
-  // ===== BARRA DE NIVEL (ARRIBA) =====
   const levelBarWidth = panelWidth;
   const levelBarHeight = 35;
   const levelBarX = panelX;
@@ -523,7 +552,9 @@ export function drawHUD() {
   core.ctx.textAlign = "left";
 }
 
-// ====== PANTALLAS ======
+/**
+ * Dibuja la pantalla del menú principal
+ */
 export function drawMenu() {
   core.ctx.fillStyle = "#0f0f1a";
   core.ctx.fillRect(0, 0, core.canvas.width, core.canvas.height);
@@ -544,6 +575,9 @@ export function drawMenu() {
   core.ctx.textAlign = "left";
 }
 
+/**
+ * Dibuja la pantalla de pausa
+ */
 export function drawPaused() {
   core.ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
   core.ctx.fillRect(0, 0, core.canvas.width, core.canvas.height);
@@ -560,6 +594,9 @@ export function drawPaused() {
   core.ctx.textAlign = "left";
 }
 
+/**
+ * Dibuja la pantalla de controles
+ */
 export function drawControlsScreen() {
   core.ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
   core.ctx.fillRect(0, 0, core.canvas.width, core.canvas.height);
@@ -612,6 +649,9 @@ export function drawControlsScreen() {
   core.ctx.textAlign = "left";
 }
 
+/**
+ * Dibuja la pantalla de subida de nivel
+ */
 export function drawLevelUp() {
   core.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
   core.ctx.fillRect(0, 0, core.canvas.width, core.canvas.height);
@@ -695,6 +735,9 @@ export function drawLevelUp() {
   core.ctx.textAlign = "left";
 }
 
+/**
+ * Dibuja la pantalla de game over
+ */
 export function drawGameOver() {
   const player = entities.player;
   
@@ -736,6 +779,9 @@ export function drawGameOver() {
   core.ctx.textAlign = "left";
 }
 
+/**
+ * Dibuja la pantalla de victoria
+ */
 export function drawVictory() {
   const player = entities.player;
   

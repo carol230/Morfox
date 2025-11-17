@@ -1,9 +1,6 @@
-// ====== INPUT.JS - Manejo de controles (teclado, mouse, touch) ======
-
 import * as core from './core.js';
 import * as entities from './entities.js';
 
-// ====== VARIABLES DE INPUT ======
 export const keys = {};
 
 export const touchInput = {
@@ -22,16 +19,27 @@ let loadError = null;
 // Variable para resetGame callback
 let resetGameCallback = null;
 
+/**
+ * Establece el estado de carga
+ * @param {boolean} loading
+ * @param {Error} error
+ */
 export function setLoadingState(loading, error = null) {
   isLoading = loading;
   loadError = error;
 }
 
+/**
+ * Establece las funciones callback
+ * @param {Object} callbacks
+ */
 export function setCallbacks(callbacks) {
   if (callbacks.resetGame) resetGameCallback = callbacks.resetGame;
 }
 
-// ====== CONTROLES TÁCTILES (MÓVIL) ======
+/**
+ * Configura los controles táctiles para móvil
+ */
 export function setupTouchControls() {
   if (!core.isTouchDevice) return;
 
@@ -88,13 +96,14 @@ export function setupTouchControls() {
   }, { passive: false });
 }
 
-// ====== EVENTOS DE TECLADO ======
+/**
+ * Configura los controles de teclado
+ */
 export function setupKeyboardControls() {
   window.addEventListener("keydown", e => {
     if (e.code === "Escape") {
       if (core.showControlsScreen) {
         core.setShowControlsScreen(false);
-        console.log("📖 Controles ocultados");
         return;
       }
 
@@ -121,7 +130,6 @@ export function setupKeyboardControls() {
     if (e.code === "KeyH") {
       if (core.gameState === "playing" || core.gameState === "paused") {
         core.toggleControlsScreen();
-        console.log(core.showControlsScreen ? "📖 Controles mostrados" : "📖 Controles ocultados");
       }
     }
 
@@ -133,7 +141,9 @@ export function setupKeyboardControls() {
   });
 }
 
-// ====== EVENTOS DE MOUSE ======
+/**
+ * Configura los controles de mouse
+ */
 export function setupMouseControls() {
   core.canvas.addEventListener("mousemove", e => {
     const rect = core.canvas.getBoundingClientRect();
@@ -143,12 +153,10 @@ export function setupMouseControls() {
 
   core.canvas.addEventListener("click", e => {
     if (loadError) {
-      console.log("❌ No se puede iniciar el juego debido a errores de carga");
       return;
     }
 
     if (isLoading) {
-      console.log("⏳ Espera a que termine de cargar...");
       return;
     }
 
@@ -156,7 +164,6 @@ export function setupMouseControls() {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    console.log(`🖱️ Click detectado en (${mx}, ${my}), estado: ${core.gameState}`);
 
     // Check botones de accesibilidad (cuando está jugando)
     if (core.gameState === "playing") {
@@ -183,13 +190,11 @@ export function setupMouseControls() {
       const helpX = contrastX - btnSize - btnPadding;
       if (mx >= helpX && mx <= helpX + btnSize && my >= btnY && my <= btnY + btnSize) {
         core.toggleControlsScreen();
-        console.log(core.showControlsScreen ? "📖 Controles mostrados" : "📖 Controles ocultados");
         return;
       }
     }
 
     if (core.gameState === "menu") {
-      console.log("🎮 Iniciando juego...");
       if (resetGameCallback) resetGameCallback();
       core.setGameState("playing");
       core.setStartTime(Date.now());
@@ -208,13 +213,10 @@ export function setupMouseControls() {
       const startX = (core.canvas.width - totalWidth) / 2;
       const cardY = panelY + 120;
 
-      console.log("🎯 Click en levelup - upgrades disponibles:", entities.currentUpgradeOptions.length);
 
       entities.currentUpgradeOptions.forEach((upgrade, i) => {
         const x = startX + i * (cardWidth + spacing);
-        console.log(`Carta ${i}: x=${x}, cardWidth=${cardWidth}, click=(${mx},${my}), cardY=${cardY}`);
         if (mx > x && mx < x + cardWidth && my > cardY && my < cardY + cardHeight) {
-          console.log(`✅ Upgrade seleccionado: ${upgrade.name}`);
           upgrade.apply();
           core.setGameState("playing");
         }
@@ -225,7 +227,9 @@ export function setupMouseControls() {
   });
 }
 
-// ====== INICIALIZACIÓN ======
+/**
+ * Inicializa todos los sistemas de control
+ */
 export function setupAllControls() {
   setupKeyboardControls();
   setupMouseControls();
