@@ -4,6 +4,8 @@ Juego de supervivencia tipo arcade shooter con generación procedural de mundo y
 
 > **Objetivo**: Sobrevive 20 minutos en un mundo procedural lleno de enemigos cada vez más difíciles. Mejora tu personaje con upgrades y utiliza granadas explosivas para eliminar hordas de enemigos.
 
+https://youtu.be/_QounWtszGY
+https://youtu.be/O0KnWkyxShA
 ---
 
 ## 🕹️ Controles
