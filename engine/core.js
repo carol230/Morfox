@@ -432,7 +432,11 @@ export function playSound(soundName) {
   try {
     const sound = sounds[soundName].cloneNode();
     sound.volume = sounds[soundName].volume;
+    sound.play().catch(e => {
+    console.warn("Error reproduciendo sonido:", e);
+    });
   } catch (e) {
+    console.warn("Error al reproducir sonido:", e);
   }
 }
 /**
