@@ -1,4 +1,4 @@
-# 🎮 Survive 20 Minutes - Pixel Dungeon Shooter
+# 🎮 Morfox - Pixel Dungeon Shooter
 
 Juego de supervivencia tipo arcade shooter con generación procedural de mundo y sistema de progresión roguelike.
 
